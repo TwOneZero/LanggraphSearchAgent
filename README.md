@@ -28,6 +28,41 @@ This project follows a client-server architecture:
 - Server-Sent Events for real-time streaming of AI responses
 
 
+## 📊 Diagrams
+
+### LangGraph Flow
+
+```mermaid
+graph TD
+    A[Start] --> B(model);
+    B --> C{tools_router};
+    C -->|tool_calls| D[tool_node];
+    C -->|no tool_calls| E[END];
+    D --> B;
+```
+
+### Client-Server Architecture
+
+```mermaid
+sequenceDiagram
+    participant Client(Next.js)
+    participant Server(FastApi)
+    participant LangGraph
+    participant OpenAI
+    participant TavilySearch
+
+    Client(Next.js)->>Server(FastApi): HTTP Request (/chat_stream/{message})
+    Server(FastApi)->>LangGraph: astream_events(message)
+    LangGraph->>OpenAI: invoke(messages)
+    OpenAI-->>LangGraph: AIMessageChunk (with tool_calls)
+    LangGraph->>TavilySearch: invoke(query)
+    TavilySearch-->>LangGraph: Search Results
+    LangGraph->>OpenAI: invoke(tool_results)
+    OpenAI-->>LangGraph: AIMessageChunk (final response)
+    LangGraph-->>Server(FastApi): Stream Events
+    Server(FastApi)-->>Client(Next.js): Server-Sent Events (SSE)
+```
+
 ## 🚀 Getting Started
 
 ### Prerequisites
